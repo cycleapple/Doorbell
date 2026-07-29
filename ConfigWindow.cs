@@ -16,7 +16,7 @@ public class ConfigWindow : Window {
     }
 
     private void DrawAlertConfig(Alert alert) {
-        ImGui.Checkbox("Play a Sound", ref alert.SoundEnabled);
+        ImGui.Checkbox("播放音效", ref alert.SoundEnabled);
 
         if (alert.SoundEnabled) {
             ImGui.SameLine();
@@ -25,26 +25,26 @@ public class ConfigWindow : Window {
             }
 
             if (ImGui.IsItemHovered()) {
-                ImGui.SetTooltip("Test Sound");
+                ImGui.SetTooltip("測試音效");
             }
         } else {
             ImGui.BeginDisabled();
         }
         
         ImGui.Indent();
-        if (ImGui.InputTextWithHint("##Sound File", "Default Doorbell", ref alert.SoundFile, 512)) {
+        if (ImGui.InputTextWithHint("##Sound File", "預設門鈴音效", ref alert.SoundFile, 512)) {
             alert.DisposeSound();
         }
         ImGui.SameLine();
         if (ImGuiComponents.IconButton(FontAwesomeIcon.FolderOpen)) {
-            Plugin.FileDialogManager.OpenFileDialog("Select a Sound File", "Sound Files (wav mp3 ogg){.wav,.mp3,.ogg}", (b, s) => {
+            Plugin.FileDialogManager.OpenFileDialog("選擇音效檔案", "音效檔案 (wav mp3 ogg){.wav,.mp3,.ogg}", (b, s) => {
                 alert.SoundFile = s;
             });
         }
         ImGui.SameLine();
-        ImGui.Text("Sound File");
+        ImGui.Text("音效檔案");
 
-        if (ImGui.SliderFloat("Volume", ref alert.SoundVolume, 0, alert.SoundFile.IsHttpUrl() ? 1 : MathF.Max(3, alert.SoundVolume + 0.01f))) {
+        if (ImGui.SliderFloat("音量", ref alert.SoundVolume, 0, alert.SoundFile.IsHttpUrl() ? 1 : MathF.Max(3, alert.SoundVolume + 0.01f))) {
             if (alert.SoundVolume < 0) alert.SoundVolume = 0;
             if (alert.SoundVolume > 1 && alert.SoundFile.IsHttpUrl()) alert.SoundVolume = 1;
             alert.DisposeSound();
@@ -53,15 +53,15 @@ public class ConfigWindow : Window {
         ImGui.Unindent();
         if (!alert.SoundEnabled) ImGui.EndDisabled();
         
-        ImGui.Checkbox("Show a chat message", ref alert.ChatEnabled);
+        ImGui.Checkbox("顯示聊天訊息", ref alert.ChatEnabled);
         ImGui.Indent();
         if (!alert.ChatEnabled) ImGui.BeginDisabled();
-        ImGui.InputText("Message", ref alert.ChatFormat, 200);
+        ImGui.InputText("訊息", ref alert.ChatFormat, 200);
         if (ImGui.IsItemHovered()) { 
             ImGui.BeginTooltip();
-            ImGui.Text("Use <link> as a placeholder to link to the player.");
-            ImGui.Text("Use <name> as a placeholder for the players name.");
-            ImGui.Text("Use <world> as a placeholder for the players world.");
+            ImGui.Text("使用 <link> 插入可點選的玩家連結。");
+            ImGui.Text("使用 <name> 插入玩家名稱。");
+            ImGui.Text("使用 <world> 插入玩家所在的世界。");
             ImGui.EndTooltip();
         }
         if (!alert.ChatEnabled) ImGui.EndDisabled();
@@ -75,17 +75,17 @@ public class ConfigWindow : Window {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             var timeRemaining = (Plugin.SilenceTimeSpan == null ? TimeSpan.Zero : Plugin.SilenceTimeSpan - Plugin.SilencedFor.Elapsed).Value;
             var str = string.Join(':', new[] { timeRemaining.Days, timeRemaining.Hours, timeRemaining.Minutes, timeRemaining.Seconds }.Select(i => $"{i:00}")).TrimStart('0', ':');
-            ImGui.DragInt("##silenceMinutes", ref silenceMinutesSlider, 0, 0, 0, Plugin.SilenceTimeSpan == null ? "Silenced until leaving a house." : $"Silenced for {str}", ImGuiSliderFlags.NoInput);
+            ImGui.DragInt("##silenceMinutes", ref silenceMinutesSlider, 0, 0, 0, Plugin.SilenceTimeSpan == null ? "已靜音，直到離開房屋。" : $"已靜音 {str}", ImGuiSliderFlags.NoInput);
             ImGui.PopStyleColor();
-            if (ImGui.Button("Unsilence Doorbell", new Vector2(ImGui.GetContentRegionAvail().X, 24 * ImGuiHelpers.GlobalScale))) {
+            if (ImGui.Button("取消門鈴靜音", new Vector2(ImGui.GetContentRegionAvail().X, 24 * ImGuiHelpers.GlobalScale))) {
                 Plugin.UnSilence();
             }
         } else {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             var timeSpan = TimeSpan.FromMinutes(silenceMinutesSlider);
             var str = string.Join(':', new[] { timeSpan.Days, timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds }.Select(i => $"{i:00}")).TrimStart('0', ':');
-            ImGui.SliderInt("##silenceMinutes", ref silenceMinutesSlider, 0, Math.Max(60, silenceMinutesSlider + 1), silenceMinutesSlider <= 0 ? "Until leaving a house," : $"For {str},", ImGuiSliderFlags.NoInput);
-            if (ImGui.Button("Silence Doorbell", new Vector2(ImGui.GetContentRegionAvail().X, 24 * ImGuiHelpers.GlobalScale))) {
+            ImGui.SliderInt("##silenceMinutes", ref silenceMinutesSlider, 0, Math.Max(60, silenceMinutesSlider + 1), silenceMinutesSlider <= 0 ? "直到離開房屋" : $"持續 {str}", ImGuiSliderFlags.NoInput);
+            if (ImGui.Button("將門鈴靜音", new Vector2(ImGui.GetContentRegionAvail().X, 24 * ImGuiHelpers.GlobalScale))) {
                 if (silenceMinutesSlider <= 0) {
                     Plugin.Silence();
                 } else {
@@ -96,7 +96,7 @@ public class ConfigWindow : Window {
 
         ImGui.Separator();
         ImGui.PushID("Doorbell_Config_Entered");;
-        ImGui.Text("When a player enters a house: ");
+        ImGui.Text("玩家進入房屋時：");
         ImGui.Indent();
         DrawAlertConfig(Plugin.Config.Entered);
         ImGui.Unindent();
@@ -104,7 +104,7 @@ public class ConfigWindow : Window {
         ImGui.Separator();
         
         ImGui.PushID("Doorbell_Config_Left");
-        ImGui.Text("When a player leaves a house: ");
+        ImGui.Text("玩家離開房屋時：");
         ImGui.Indent();
         DrawAlertConfig(Plugin.Config.Left);
         ImGui.Unindent();
@@ -113,7 +113,7 @@ public class ConfigWindow : Window {
         ImGui.Separator();
         
         ImGui.PushID("Doorbell_Config_AlreadyHere");
-        ImGui.Text("When entering a house with people already inside: ");
+        ImGui.Text("進入已有玩家在內的房屋時：");
         ImGui.Indent();
         DrawAlertConfig(Plugin.Config.AlreadyHere);
         ImGui.Unindent();
@@ -121,12 +121,12 @@ public class ConfigWindow : Window {
         
         ImGui.Separator();
 
-        if (ImGui.Button("Save")) {
+        if (ImGui.Button("儲存")) {
             Plugin.PluginInterface.SavePluginConfig(Plugin.Config);
         }
 
         ImGui.SameLine();
-        if (ImGui.Button("Save & Close")) {
+        if (ImGui.Button("儲存並關閉")) {
             Plugin.PluginInterface.SavePluginConfig(Plugin.Config);
             IsOpen = false;
         }

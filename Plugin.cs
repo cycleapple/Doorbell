@@ -27,7 +27,7 @@ public sealed class Plugin : IDalamudPlugin {
     [PluginService] public static IPluginLog Log { get; private set; } = null!;
     public static FileDialogManager FileDialogManager { get; } = new();
 
-    private ConfigWindow configWindow = new($"{Name} Config");
+    private ConfigWindow configWindow = new($"{Name} 設定");
     private WindowSystem windowSystem;
 
     internal static bool Silenced { get; private set; }
@@ -38,9 +38,9 @@ public sealed class Plugin : IDalamudPlugin {
         Config = (Config) (PluginInterface.GetPluginConfig() ?? new Config());
         ClientState.TerritoryChanged += OnTerritoryChanged;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigWindow;
-        CommandManager.AddHandler("/doorbell", new CommandInfo(HandleCommand) { ShowInHelp = true, HelpMessage = $"Toggle the {Name} config window." });
-        CommandManager.AddHandler("/doorbell silence", new CommandInfo(HandleCommand) { ShowInHelp = true, HelpMessage = $"Disable alerts until leaving a house."});
-        CommandManager.AddHandler("/doorbell silence #", new CommandInfo(HandleCommand) { ShowInHelp = true, HelpMessage = $"Disable alerts for # minutes." });
+        CommandManager.AddHandler("/doorbell", new CommandInfo(HandleCommand) { ShowInHelp = true, HelpMessage = $"開啟或關閉 {Name} 設定視窗。" });
+        CommandManager.AddHandler("/doorbell silence", new CommandInfo(HandleCommand) { ShowInHelp = true, HelpMessage = "將提醒靜音，直到離開房屋。" });
+        CommandManager.AddHandler("/doorbell silence #", new CommandInfo(HandleCommand) { ShowInHelp = true, HelpMessage = "將提醒靜音指定分鐘數。" });
         windowSystem = new WindowSystem(Name);
         windowSystem.AddWindow(configWindow);
         PluginInterface.UiBuilder.Draw += windowSystem.Draw;
@@ -80,10 +80,10 @@ public sealed class Plugin : IDalamudPlugin {
                 break;
         }
         
-        Chat.PrintError("Invalid Doorbell Command - Available Options:");
-        Chat.PrintError("  - /doorbell  - Toggle Config Window");
-        Chat.PrintError("  - /doorbell silence   - Disables Doorbell until you next leave a house.");
-        Chat.PrintError("  - /doorbell silence [minutes]   - Disables Doorbell for a specified number of minutes.");
+        Chat.PrintError("無效的 Doorbell 指令，可用選項：");
+        Chat.PrintError("  - /doorbell － 開啟或關閉設定視窗");
+        Chat.PrintError("  - /doorbell silence － 將門鈴靜音，直到離開房屋");
+        Chat.PrintError("  - /doorbell silence [分鐘] － 將門鈴靜音指定分鐘數");
     }
 
     private void ToggleConfigWindow() {
@@ -123,13 +123,13 @@ public sealed class Plugin : IDalamudPlugin {
         if (timeSpan != null) Framework.Update += SilenceCheck;
         if (quiet) return;
         if (timeSpan == null) {
-            Chat.Print("Doorbell has been silenced until you next leave a house.");
+            Chat.Print("Doorbell 已靜音，直到你下次離開房屋。");
         } else {
             var silenceEnd = DateTime.Now + timeSpan.Value;
             if (timeSpan.Value.TotalDays >= 0.5f) {
-                Chat.Print($"Doorbell has been silenced until {silenceEnd:g}.");
+                Chat.Print($"Doorbell 已靜音至 {silenceEnd:g}。");
             } else {
-                Chat.Print($"Doorbell has been silenced until {silenceEnd:t}.");
+                Chat.Print($"Doorbell 已靜音至 {silenceEnd:t}。");
             }
         }
     }
@@ -138,7 +138,7 @@ public sealed class Plugin : IDalamudPlugin {
         SilencedFor.Reset();
         Silenced = false;
         SilenceTimeSpan = null;
-        Chat.Print("Doorbell has been unsilenced.");
+        Chat.Print("Doorbell 已取消靜音。");
         Framework.Update -= SilenceCheck;
     }
 
